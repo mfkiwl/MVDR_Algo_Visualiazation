@@ -51,6 +51,7 @@ class MVDR(object):
         if self.normal != 0 :
             y = self.normal*(y - y_min)/y_range
         #interpolate the data
+        #print("w:\n")
         print(w20)
         func_y = interp1d(theta,y)
         return func_y
@@ -479,7 +480,7 @@ class Arrays2(MovingCameraScene):
         text_formula_array = [
             "y(t)",
             "=",
-            "\\sum_{i=1}^{N}",
+            "\\sum_{i=1}^{8}",
             "w_{i}^{*}",
             "x_i(t)",
             "=",
@@ -499,7 +500,7 @@ class Arrays2(MovingCameraScene):
 
         for i in range(0,9):
             dot.append(Dot(point=[-6+1.5*i, 0, 0], color = YELLOW))
-            dot_lable.append(TexMobject("x_%d"%i).next_to(dot[i],UP).scale(0.5))
+            dot_lable.append(TexMobject("x_%d"%i).next_to(dot[i],UP).scale(0.7))
             W.append(Circle(radius = 0.3, arc_center = dot[i].get_center()+[0,-0.75,0], color = YELLOW, fill_color = YELLOW))
             W_lable.append(TextMobject("W${^*_%d}$"%i).move_to(W[i].get_center()).scale(0.5))
             line.append(Arrow(start = dot[i].get_center(), end = W[i].get_top(), stroke_width = 1.5))
@@ -611,6 +612,15 @@ class Arrays2(MovingCameraScene):
             *[Write(i) for i in  dot_lable]
         )
         self.wait()
+        """ self.play(
+            AnimationGroup(
+                *[
+                    Flash(i) for i in dot
+                ],
+                lag_ratio = 0.1
+            ),
+            run_time = 1
+        ) """
         wave = []
         for i in range(0,3):
             wave.append(Arc(angle = 2*pi ,radius = 0.01, fill_color = YELLOW, fill_opacity = 0.1, color = YELLOW, opacity = 0.1).move_to([0,10,0]))
@@ -664,7 +674,7 @@ class Arrays2(MovingCameraScene):
             Sigma_circel.shift, 4.5*UP,
             Sigma_circel.scale, 0.8,
             text_formula.scale, 0.5,
-            text_formula.next_to, Sigma_circel, buff = 1,  
+            text_formula.move_to,[2.5,1.5,0],  
             *[UpdateFromFunc(i,Updater_of_arrow_tip) for i in arrow]
         )
         self.play(
@@ -1012,3 +1022,68 @@ class Algo_proof_optimization(Scene):
             mob_9.move_to,mob_8.get_left()+DOWN+RIGHT*mob_9.get_width()/4,
             mob_9.scale,0.5,
         )
+
+class testscene(Scene):
+    def construct(self):
+        mvdr_1 = MVDR(theta0 = 20, theta1 =55, normal = 4)
+        plot_1 = ParametricFunction(
+            lambda t: np.array([
+                3.87*t,
+                (mvdr_1.y.__call__(degrees(t))),
+                0
+            ]),
+            color = RED,
+            t_min = -pi/2 + 0.02,
+            t_max = pi/2 - 0.02,
+            step_size = 0.01
+        ).shift([0,-3.5,0])
+        print("w\n")
+        print(mvdr_1.w)
+        self.play(
+            ShowCreation(plot_1)
+        )
+        self.wait()
+        self.clear()
+        mvdr_1.w.fill(0)
+        mvdr_1.w[2] = 1
+        new_y_1 = mvdr_1.generate_funcy(mvdr_1.w)
+        plot_2 = ParametricFunction(
+            lambda t: np.array([
+                3.87*t,
+                (new_y_1.__call__(degrees(t))),
+                0
+            ]),
+            color = RED,
+            t_min = -pi/2 + 0.02,
+            t_max = pi/2 - 0.02,
+            step_size = 0.01
+        ).shift([0,-3.5,0])
+        
+        mvdr_1.w.fill(0)
+        mvdr_1.w[4] = 1
+        mvdr_1.w[2] = 0.5
+        new_y_2 = mvdr_1.generate_funcy(mvdr_1.w)
+        plot_3 = ParametricFunction(
+            lambda t: np.array([
+                3.87*t,
+                (new_y_2.__call__(degrees(t))),
+                0
+            ]),
+            color = RED,
+            t_min = -pi/2 + 0.02,
+            t_max = pi/2 - 0.02,
+            step_size = 0.01
+        ).shift([0,-3.5,0])
+
+        print("w\n")
+        print(mvdr_1.w)
+        self.play(
+            ShowCreation(plot_2)
+        )
+        self.wait()
+        self.play(
+            ReplacementTransform(plot_2,plot_3)
+        )
+
+
+
